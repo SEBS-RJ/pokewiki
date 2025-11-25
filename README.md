@@ -1,193 +1,138 @@
-# 🎮 Pokédex React Avanzada
+# PokéTeam - Pokémon Team Builder
 
-Una Pokédex interactiva y completa construida con React + Vite, consumiendo datos en tiempo real de la [PokéAPI](https://pokeapi.co).
+A modern React application for building and managing your perfect Pokémon team.
 
-## ✨ Características Principales
+## Features
 
-### 📖 Exploración de Pokémon
+- 📚 **Pokédex**: Browse and search through all Pokémon
+- 🎯 **Capture System**: Catch and collect your favorite Pokémon
+- 👥 **Team Builder**: Build teams of up to 6 Pokémon
+- ⚔️ **Comparison Tool**: Compare stats and type matchups
+- 📊 **Team Analysis**: Get insights on your team composition
+- 🏆 **Achievements**: Unlock badges as you progress
+- 🌓 **Dark Mode**: Toggle between light and dark themes
+- 💾 **Data Persistence**: Save your progress with Supabase or localStorage
 
-- **Datos en tiempo real** desde PokéAPI
-- **Paginación dinámica** con más de 1000 Pokémon
-- **Búsqueda inteligente** por nombre
-- **Filtros avanzados**:
-  - Múltiples tipos simultáneos
-  - Rango de generaciones
-  - Estadísticas mínimas (HP, Ataque)
-  - Guardado de filtros favoritos
+## Tech Stack
 
-### 🔍 Detalles Completos
+- **React 18** - UI library
+- **Vite** - Build tool
+- **Tailwind CSS** - Styling
+- **React Router** - Navigation
+- **Supabase** - Backend & Authentication
+- **PokeAPI** - Pokémon data
+- **React Icons** - Icon library
 
-Al hacer clic en cualquier Pokémon, verás:
+## Getting Started
 
-- Imagen oficial de alta calidad
-- Descripción de la Pokédex
-- Estadísticas base completas con barras de progreso
-- Cadena evolutiva visual
-- Habilidades (normales y ocultas)
-- Primeros 10 movimientos
-- Información física (altura, peso)
-- Generación y hábitat
+### Prerequisites
 
-### ⭐ Sistema de Favoritos
+- Node.js 16+
+- npm or yarn
 
-- Marca tus Pokémon favoritos
-- Vista dedicada de favoritos
-- Exportación de lista en JSON
-- Persistencia local
+### Installation
 
-### ⚔️ Comparador de Pokémon
-
-- Compara 2-3 Pokémon lado a lado
-- Visualización de estadísticas
-- Análisis de ventajas por tipo
-- Comparación de características físicas
-
-### 🎒 Constructor de Equipos
-
-- Crea equipos de hasta 6 Pokémon
-- Análisis automático de cobertura de tipos
-- Guarda múltiples equipos con nombres
-- Carga equipos guardados
-- Sugerencias de mejora
-
-### 🌓 Modo Oscuro/Claro
-
-- Cambio instantáneo de tema
-- Colores adaptados a la paleta Pokémon
-- Persistencia de preferencia
-- Diseño optimizado para ambos modos
-
-### 📝 Registro de Entrenadores
-
-- Formulario multipaso profesional
-- Validación en cada paso
-- Registro de preferencias Pokémon
-- Guardado de progreso
-
-### 💾 Persistencia de Datos
-
-Todo se guarda localmente:
-
-- Pokémon capturados
-- Favoritos
-- Equipos guardados
-- Filtros personalizados
-- Preferencia de tema
-
-## 🚀 Tecnologías Utilizadas
-
-- **React 19** con Hooks
-- **Vite** para desarrollo rápido
-- **PokéAPI** para datos reales
-- **Context API** para gestión de estado global
-- **LocalStorage** para persistencia
-- **CSS-in-JS** para estilos dinámicos
-
-## 📦 Instalación
+1. Clone the repository
 
 ```bash
-# Clonar el repositorio
-git clone <tu-repositorio>
+git clone <repository-url>
+cd poketeam-app
+```
 
-# Instalar dependencias
+2. Install dependencies
+
+```bash
 npm install
+```
 
-# Iniciar servidor de desarrollo
+3. Create a `.env` file in the root directory
+
+```bash
+cp .env.example .env
+```
+
+4. Add your Supabase credentials to `.env`
+
+```
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+5. Start the development server
+
+```bash
 npm run dev
+```
 
-# Construir para producción
+6. Open [http://localhost:3000](http://localhost:3000)
+
+## Build for Production
+
+```bash
 npm run build
 ```
 
-## 🎯 Estructura del Proyecto
+The build files will be in the `dist` directory.
+
+## Project Structure
 
 ```
 src/
-├── components/       # Componentes reutilizables
-│   ├── PokemonCard.jsx
-│   ├── PokemonDetailModal.jsx
-│   ├── AdvancedFilters.jsx
-│   ├── PokemonComparison.jsx
-│   ├── FavoritesList.jsx
-│   ├── TeamBuilder.jsx
-│   ├── FormMultiStep.jsx
-│   └── ...
-├── context/          # Context API
-│   └── ThemeContext.jsx
-├── hooks/            # Hooks personalizados
-│   ├── usePokemonData.js
-│   ├── usePokemonDetail.js
-│   ├── useLocalStorage.js
-│   └── useTheme.js
-├── utils/            # Utilidades
-│   ├── getColorByType.js
-│   ├── getBackgroundByTypes.js
-│   └── typeEffectiveness.js
-├── views/            # Vistas principales
-│   └── Dashboard.jsx
-├── App.jsx
-└── main.jsx
+├── assets/          # Static assets
+├── components/      # React components
+│   ├── auth/       # Authentication components
+│   ├── common/     # Shared components
+│   ├── pokemon/    # Pokémon-related components
+│   ├── team/       # Team building components
+│   └── profile/    # User profile components
+├── context/        # React Context providers
+├── hooks/          # Custom React hooks
+├── pages/          # Page components
+├── services/       # API services
+├── styles/         # CSS files
+├── utils/          # Utility functions
+├── App.jsx         # Main App component
+└── main.jsx        # Entry point
 ```
 
-## 🎨 Características Técnicas
+## Features Overview
 
-### Hooks Personalizados
+### Authentication
 
-**`usePokemonData(limit, offset)`**
+- Email/password registration and login
+- Protected routes
+- User profiles
 
-- Consume PokéAPI con paginación
-- Manejo de estados de carga y error
-- Formateo automático de datos
+### Pokédex
 
-**`usePokemonDetail(pokemonId)`**
+- Browse all Pokémon
+- Search by name or ID
+- Filter by type
+- View detailed stats
 
-- Obtiene detalles completos de un Pokémon
-- Procesa cadena evolutiva
-- Traduce descripciones al español
+### Team Builder
 
-**`useLocalStorage(key, initialValue)`**
+- Add up to 6 Pokémon to your team
+- Analyze team composition
+- View type coverage and weaknesses
+- Save teams to your account
 
-- Sincronización automática con localStorage
-- Manejo de errores
-- Tipado seguro
+### Comparison
 
-**`useTheme()`**
+- Compare two Pokémon side-by-side
+- View stat differences
+- Analyze type matchups
 
-- Acceso al contexto de tema
-- Colores dinámicos según modo
-- Toggle de tema
+## Contributing
 
-### Optimizaciones
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-- Caché de datos de PokéAPI
-- Renderizado condicional inteligente
-- Lazy loading de imágenes
-- Paginación eficiente
-- LocalStorage para evitar llamadas innecesarias
+## License
 
-## 📱 Responsive Design
+This project is for educational purposes. Pokémon and Pokémon character names are trademarks of Nintendo.
 
-La aplicación es completamente responsive y funciona perfectamente en:
+## Acknowledgments
 
-- 📱 Móviles
-- 📱 Tablets
-- 💻 Desktops
-- 🖥️ Pantallas grandes
-
-## 🤝 Contribuciones
-
-Este es un proyecto educativo. ¡Las sugerencias y mejoras son bienvenidas!
-
-## 📄 Licencia
-
-Proyecto de práctica educativa. Datos proporcionados por [PokéAPI](https://pokeapi.co).
-
-## 🙏 Créditos
-
-- **PokéAPI**: Por proporcionar los datos
-- **The Pokémon Company**: Por los diseños originales
-- **Nintendo**: Por la franquicia Pokémon
-
----
-
-**Desarrollado con ⚡ por [Tu Nombre]**
+- [PokeAPI](https://pokeapi.co/) for the Pokémon data
+- [Supabase](https://supabase.com/) for backend services
+- The Pokémon community

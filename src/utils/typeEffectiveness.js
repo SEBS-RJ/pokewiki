@@ -1,125 +1,160 @@
-// Matriz de efectividad de tipos (simplificada)
 export const typeEffectiveness = {
+  normal: {
+    weakTo: ["fighting"],
+    resistantTo: [],
+    immuneTo: ["ghost"],
+  },
   fire: {
-    superEffective: ["grass", "ice", "bug", "steel"],
-    notVeryEffective: ["fire", "water", "rock", "dragon"],
+    weakTo: ["water", "ground", "rock"],
+    resistantTo: ["fire", "grass", "ice", "bug", "steel", "fairy"],
+    immuneTo: [],
   },
   water: {
-    superEffective: ["fire", "ground", "rock"],
-    notVeryEffective: ["water", "grass", "dragon"],
-  },
-  grass: {
-    superEffective: ["water", "ground", "rock"],
-    notVeryEffective: [
-      "fire",
-      "grass",
-      "poison",
-      "flying",
-      "bug",
-      "dragon",
-      "steel",
-    ],
+    weakTo: ["electric", "grass"],
+    resistantTo: ["fire", "water", "ice", "steel"],
+    immuneTo: [],
   },
   electric: {
-    superEffective: ["water", "flying"],
-    notVeryEffective: ["electric", "grass", "dragon"],
-    noEffect: ["ground"],
+    weakTo: ["ground"],
+    resistantTo: ["electric", "flying", "steel"],
+    immuneTo: [],
   },
-  psychic: {
-    superEffective: ["fighting", "poison"],
-    notVeryEffective: ["psychic", "steel"],
-    noEffect: ["dark"],
+  grass: {
+    weakTo: ["fire", "ice", "poison", "flying", "bug"],
+    resistantTo: ["water", "electric", "grass", "ground"],
+    immuneTo: [],
   },
   ice: {
-    superEffective: ["grass", "ground", "flying", "dragon"],
-    notVeryEffective: ["fire", "water", "ice", "steel"],
-  },
-  dragon: {
-    superEffective: ["dragon"],
-    notVeryEffective: ["steel"],
-    noEffect: ["fairy"],
-  },
-  dark: {
-    superEffective: ["psychic", "ghost"],
-    notVeryEffective: ["fighting", "dark", "fairy"],
-  },
-  fairy: {
-    superEffective: ["fighting", "dragon", "dark"],
-    notVeryEffective: ["fire", "poison", "steel"],
+    weakTo: ["fire", "fighting", "rock", "steel"],
+    resistantTo: ["ice"],
+    immuneTo: [],
   },
   fighting: {
-    superEffective: ["normal", "ice", "rock", "dark", "steel"],
-    notVeryEffective: ["poison", "flying", "psychic", "bug", "fairy"],
-    noEffect: ["ghost"],
-  },
-  flying: {
-    superEffective: ["grass", "fighting", "bug"],
-    notVeryEffective: ["electric", "rock", "steel"],
+    weakTo: ["flying", "psychic", "fairy"],
+    resistantTo: ["bug", "rock", "dark"],
+    immuneTo: [],
   },
   poison: {
-    superEffective: ["grass", "fairy"],
-    notVeryEffective: ["poison", "ground", "rock", "ghost"],
-    noEffect: ["steel"],
+    weakTo: ["ground", "psychic"],
+    resistantTo: ["grass", "fighting", "poison", "bug", "fairy"],
+    immuneTo: [],
   },
   ground: {
-    superEffective: ["fire", "electric", "poison", "rock", "steel"],
-    notVeryEffective: ["grass", "bug"],
-    noEffect: ["flying"],
+    weakTo: ["water", "grass", "ice"],
+    resistantTo: ["poison", "rock"],
+    immuneTo: ["electric"],
   },
-  rock: {
-    superEffective: ["fire", "ice", "flying", "bug"],
-    notVeryEffective: ["fighting", "ground", "steel"],
+  flying: {
+    weakTo: ["electric", "ice", "rock"],
+    resistantTo: ["grass", "fighting", "bug"],
+    immuneTo: ["ground"],
+  },
+  psychic: {
+    weakTo: ["bug", "ghost", "dark"],
+    resistantTo: ["fighting", "psychic"],
+    immuneTo: [],
   },
   bug: {
-    superEffective: ["grass", "psychic", "dark"],
-    notVeryEffective: [
-      "fire",
-      "fighting",
-      "poison",
+    weakTo: ["fire", "flying", "rock"],
+    resistantTo: ["grass", "fighting", "ground"],
+    immuneTo: [],
+  },
+  rock: {
+    weakTo: ["water", "grass", "fighting", "ground", "steel"],
+    resistantTo: ["normal", "fire", "poison", "flying"],
+    immuneTo: [],
+  },
+  ghost: {
+    weakTo: ["ghost", "dark"],
+    resistantTo: ["poison", "bug"],
+    immuneTo: ["normal", "fighting"],
+  },
+  dragon: {
+    weakTo: ["ice", "dragon", "fairy"],
+    resistantTo: ["fire", "water", "electric", "grass"],
+    immuneTo: [],
+  },
+  dark: {
+    weakTo: ["fighting", "bug", "fairy"],
+    resistantTo: ["ghost", "dark"],
+    immuneTo: ["psychic"],
+  },
+  steel: {
+    weakTo: ["fire", "fighting", "ground"],
+    resistantTo: [
+      "normal",
+      "grass",
+      "ice",
       "flying",
-      "ghost",
+      "psychic",
+      "bug",
+      "rock",
+      "dragon",
       "steel",
       "fairy",
     ],
+    immuneTo: ["poison"],
   },
-  ghost: {
-    superEffective: ["psychic", "ghost"],
-    notVeryEffective: ["dark"],
-    noEffect: ["normal"],
-  },
-  steel: {
-    superEffective: ["ice", "rock", "fairy"],
-    notVeryEffective: ["fire", "water", "electric", "steel"],
-  },
-  normal: {
-    superEffective: [],
-    notVeryEffective: ["rock", "steel"],
-    noEffect: ["ghost"],
+  fairy: {
+    weakTo: ["poison", "steel"],
+    resistantTo: ["fighting", "bug", "dark"],
+    immuneTo: ["dragon"],
   },
 };
 
-export function getTypeMatchup(attackerType, defenderTypes) {
-  const effectiveness = typeEffectiveness[attackerType.toLowerCase()];
-  if (!effectiveness) return { multiplier: 1, effectiveness: "normal" };
+export const calculateTypeEffectiveness = (attackingType, defendingTypes) => {
+  let effectiveness = 1;
 
-  let multiplier = 1;
+  defendingTypes.forEach((defenseType) => {
+    const defenseData = typeEffectiveness[defenseType.toLowerCase()];
 
-  defenderTypes.forEach((defType) => {
-    if (effectiveness.superEffective?.includes(defType)) {
-      multiplier *= 2;
-    }
-    if (effectiveness.notVeryEffective?.includes(defType)) {
-      multiplier *= 0.5;
-    }
-    if (effectiveness.noEffect?.includes(defType)) {
-      multiplier *= 0;
+    if (defenseData.immuneTo.includes(attackingType.toLowerCase())) {
+      effectiveness = 0;
+    } else if (defenseData.weakTo.includes(attackingType.toLowerCase())) {
+      effectiveness *= 2;
+    } else if (defenseData.resistantTo.includes(attackingType.toLowerCase())) {
+      effectiveness *= 0.5;
     }
   });
 
-  let effectivenessLabel = "normal";
-  if (multiplier === 0) effectivenessLabel = "sin efecto";
-  else if (multiplier < 1) effectivenessLabel = "poco eficaz";
-  else if (multiplier > 1) effectivenessLabel = "súper eficaz";
+  return effectiveness;
+};
 
-  return { multiplier, effectiveness: effectivenessLabel };
-}
+export const getEffectivenessLabel = (effectiveness) => {
+  if (effectiveness === 0) return "Immune";
+  if (effectiveness === 0.25) return "Not Very Effective (x0.25)";
+  if (effectiveness === 0.5) return "Not Very Effective (x0.5)";
+  if (effectiveness === 1) return "Normal";
+  if (effectiveness === 2) return "Super Effective (x2)";
+  if (effectiveness === 4) return "Super Effective (x4)";
+  return "Normal";
+};
+
+export const getEffectivenessColor = (effectiveness) => {
+  if (effectiveness === 0) return "#999999";
+  if (effectiveness < 1) return "#FF6B6B";
+  if (effectiveness === 1) return "#4ECDC4";
+  if (effectiveness > 1) return "#95E1D3";
+  return "#4ECDC4";
+};
+
+export const getTypeMatchups = (types) => {
+  const weaknesses = new Set();
+  const resistances = new Set();
+  const immunities = new Set();
+
+  types.forEach((type) => {
+    const typeData = typeEffectiveness[type.toLowerCase()];
+    if (typeData) {
+      typeData.weakTo.forEach((t) => weaknesses.add(t));
+      typeData.resistantTo.forEach((t) => resistances.add(t));
+      typeData.immuneTo.forEach((t) => immunities.add(t));
+    }
+  });
+
+  return {
+    weaknesses: Array.from(weaknesses),
+    resistances: Array.from(resistances),
+    immunities: Array.from(immunities),
+  };
+};

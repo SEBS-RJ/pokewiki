@@ -1,100 +1,38 @@
 import { useState, useEffect } from "react";
+import { pokeAPI } from "../services/pokeapi";
 
-export function usePokemonSearch(searchTerm) {
-  const [searchResults, setSearchResults] = useState([]);
-  const [searching, setSearching] = useState(false);
-  const [searchError, setSearchError] = useState(null);
+export const usePokemonSearch = () => {
+  const [allPokemon, setAllPokemon] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!searchTerm || searchTerm.trim().length === 0) {
-      setSearchResults([]);
-      setSearchError(null);
-      setSearching(false);
-      return;
-    }
-
-    const searchPokemon = async () => {
-      setSearching(true);
-      setSearchError(null);
-
+    const fetchAll = async () => {
       try {
-        const term = searchTerm.toLowerCase().trim();
-
-        // Si es un número, buscar por ID exacto
-        if (/^\d+$/.test(term)) {
-          const response = await fetch(
-            `https://pokeapi.co/api/v2/pokemon/${term}`
-          );
-
-          if (!response.ok) {
-            throw new Error("Pokémon no encontrado");
-          }
-
-          const data = await response.json();
-          const formatted = formatPokemonData(data);
-          setSearchResults([formatted]);
-        } else {
-          // Si es texto, buscar en la lista completa de nombres
-          const listResponse = await fetch(
-            `https://pokeapi.co/api/v2/pokemon?limit=1000`
-          );
-          const listData = await listResponse.json();
-
-          // Filtrar nombres que contengan el término de búsqueda
-          const matchingNames = listData.results
-            .filter((p) => p.name.includes(term))
-            .slice(0, 20); // Limitar a 20 resultados
-
-          if (matchingNames.length === 0) {
-            throw new Error("No se encontraron Pokémon con ese nombre");
-          }
-
-          // Obtener detalles de cada Pokémon encontrado
-          const pokemonDetails = await Promise.all(
-            matchingNames.map(async (pokemon) => {
-              const res = await fetch(pokemon.url);
-              const data = await res.json();
-              return formatPokemonData(data);
-            })
-          );
-
-          setSearchResults(pokemonDetails);
-        }
+        const data = await pokeAPI.getAllPokemonLight();
+        setAllPokemon(data);
       } catch (err) {
-        setSearchError(err.message);
-        setSearchResults([]);
+        console.error(err);
       } finally {
-        setSearching(false);
+        setLoading(false);
       }
     };
+    fetchAll();
+  }, []);
 
-    // Debounce: esperar 300ms para búsqueda por nombre, instantáneo para ID
-    const isNumeric = /^\d+$/.test(searchTerm.trim());
-    const delay = isNumeric ? 0 : 300;
-    const timeoutId = setTimeout(searchPokemon, delay);
+  const searchPokemonGlobal = async (query) => {
+    if (!query) return null;
 
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
+    const found = allPokemon.find(
+      (p) =>
+        p.name.toLowerCase() === query.toLowerCase() ||
+        p.url.endsWith(`/${query}/`)
+    );
 
-  return { searchResults, searching, searchError };
-}
-
-// Función helper para formatear datos del Pokémon
-function formatPokemonData(data) {
-  return {
-    id: data.id,
-    name: data.name,
-    image: data.sprites.front_default,
-    types: data.types.map((t) => t.type.name),
-    stats: data.stats.reduce((acc, stat) => {
-      acc[stat.stat.name] = stat.base_stat;
-      return acc;
-    }, {}),
-    height: data.height,
-    weight: data.weight,
-    abilities: data.abilities.map((a) => ({
-      name: a.ability.name,
-      isHidden: a.is_hidden,
-    })),
+    if (found) {
+      return await pokeAPI.getPokemonByName(found.name);
+    }
+    return null;
   };
-}
+
+  return { allPokemon, loading, searchPokemonGlobal };
+};

@@ -1,55 +1,47 @@
 import { useState, useEffect } from "react";
+import { pokeAPI } from "../services/pokeapi";
 
-export function usePokemonData(limit = 20, offset = 0) {
-  const [pokemons, setPokemons] = useState([]);
+export const usePokemonData = (initialLimit = 50) => {
+  const [pokemonList, setPokemonList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [totalCount, setTotalCount] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    const fetchPokemons = async () => {
+    loadPokemon(initialLimit);
+  }, []);
+
+  const loadPokemon = async (limit = 50, offset = 0) => {
+    try {
       setLoading(true);
-      setError(null);
+      const data = await pokeAPI.getPokemonList(limit, offset);
 
-      try {
-        const response = await fetch(
-          `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`
-        );
-        const data = await response.json();
-        setTotalCount(data.count);
+      const detailedPokemon = await Promise.all(
+        data.results.map(async (p) => pokeAPI.getPokemonByName(p.name))
+      );
 
-        const pokemonDetails = await Promise.all(
-          data.results.map(async (pokemon) => {
-            const res = await fetch(pokemon.url);
-            return res.json();
-          })
-        );
+      if (offset === 0) setPokemonList(detailedPokemon);
+      else setPokemonList((prev) => [...prev, ...detailedPokemon]);
 
-        const formattedPokemons = pokemonDetails.map((p) => ({
-          id: p.id,
-          name: p.name,
-          image: p.sprites.front_default,
-          types: p.types.map((t) => t.type.name),
-          stats: p.stats.reduce((acc, stat) => {
-            acc[stat.stat.name] = stat.base_stat;
-            return acc;
-          }, {}),
-          height: p.height,
-          weight: p.weight,
-          abilities: p.abilities.map((a) => a.ability.name),
-        }));
+      setHasMore(data.next !== null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        setPokemons(formattedPokemons);
-      } catch (err) {
-        setError("Error al cargar los Pokémon. Intenta nuevamente.");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadMore = async () => {
+    if (!loading && hasMore) {
+      await loadPokemon(50, pokemonList.length);
+    }
+  };
 
-    fetchPokemons();
-  }, [limit, offset]);
+  const getPokemonById = async (id) => {
+    const cached = pokemonList.find((p) => p.id === parseInt(id));
+    if (cached) return cached;
+    return await pokeAPI.getPokemonById(id);
+  };
 
-  return { pokemons, loading, error, totalCount };
-}
+  return { pokemonList, loading, error, hasMore, loadMore, getPokemonById, refresh: () => loadPokemon(initialLimit) };
+};

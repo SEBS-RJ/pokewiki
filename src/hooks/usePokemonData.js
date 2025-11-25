@@ -1,29 +1,41 @@
 import { useState, useEffect } from "react";
 import { pokeAPI } from "../services/pokeapi";
 
-export const usePokemonData = (initialLimit = 50) => {
+export const usePokemonData = (pageSize = 50) => {
   const [pokemonList, setPokemonList] = useState([]);
+  const [allPokemonIndex, setAllPokemonIndex] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [hasMore, setHasMore] = useState(true);
+  const [offset, setOffset] = useState(0);
 
   useEffect(() => {
-    loadPokemon(initialLimit);
+    const loadAllNames = async () => {
+      try {
+        const data = await pokeAPI.getPokemonList(100000, 0);
+        const index = data.results.map((p, idx) => ({
+          name: p.name,
+          id: idx + 1,
+        }));
+        setAllPokemonIndex(index);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+    loadAllNames();
   }, []);
 
-  const loadPokemon = async (limit = 50, offset = 0) => {
+  const loadPokemon = async () => {
+    if (!hasMore) return;
     try {
       setLoading(true);
-      const data = await pokeAPI.getPokemonList(limit, offset);
-
-      const detailedPokemon = await Promise.all(
-        data.results.map(async (p) => pokeAPI.getPokemonByName(p.name))
+      const data = await pokeAPI.getPokemonList(pageSize, offset);
+      const detailed = await Promise.all(
+        data.results.map((p) => pokeAPI.getPokemonByName(p.name))
       );
-
-      if (offset === 0) setPokemonList(detailedPokemon);
-      else setPokemonList((prev) => [...prev, ...detailedPokemon]);
-
-      setHasMore(data.next !== null);
+      setPokemonList((prev) => [...prev, ...detailed]);
+      setOffset((prev) => prev + pageSize);
+      setHasMore(!!data.next);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -31,17 +43,12 @@ export const usePokemonData = (initialLimit = 50) => {
     }
   };
 
-  const loadMore = async () => {
-    if (!loading && hasMore) {
-      await loadPokemon(50, pokemonList.length);
-    }
+  return {
+    pokemonList,
+    allPokemonIndex,
+    loading,
+    error,
+    hasMore,
+    loadMore: loadPokemon,
   };
-
-  const getPokemonById = async (id) => {
-    const cached = pokemonList.find((p) => p.id === parseInt(id));
-    if (cached) return cached;
-    return await pokeAPI.getPokemonById(id);
-  };
-
-  return { pokemonList, loading, error, hasMore, loadMore, getPokemonById, refresh: () => loadPokemon(initialLimit) };
 };

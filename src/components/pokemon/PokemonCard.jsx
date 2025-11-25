@@ -8,7 +8,9 @@ import {
 import { FiStar } from "react-icons/fi";
 
 const PokemonCard = ({ pokemon, onSelect, isCaptured, onCapture }) => {
-  const primaryType = pokemon.types[0]?.type.name;
+  if (!pokemon) return null;
+
+  const primaryType = pokemon.types?.[0]?.type?.name || "normal";
 
   return (
     <div
@@ -35,7 +37,7 @@ const PokemonCard = ({ pokemon, onSelect, isCaptured, onCapture }) => {
         >
           <img
             src={getPokemonImageUrl(pokemon.id, "official")}
-            alt={pokemon.name}
+            alt={pokemon.name || "pokemon"}
             className="w-full h-full object-contain drop-shadow-lg transform group-hover:scale-110 transition-transform duration-300"
             loading="lazy"
           />
@@ -47,41 +49,41 @@ const PokemonCard = ({ pokemon, onSelect, isCaptured, onCapture }) => {
               #{formatPokemonId(pokemon.id)}
             </span>
             <div className="flex gap-1">
-              {pokemon.types.map((type) => (
+              {pokemon.types?.map((type) => (
                 <span
-                  key={type.type.name}
+                  key={type?.type?.name || Math.random()}
                   className="px-2 py-1 text-xs font-semibold text-white rounded-full"
                   style={{
-                    backgroundColor: getTypeColor(type.type.name),
+                    backgroundColor: getTypeColor(type?.type?.name || "normal"),
                   }}
                 >
-                  {type.type.name.toUpperCase()}
+                  {type?.type?.name?.toUpperCase() || "NORMAL"}
                 </span>
               ))}
             </div>
           </div>
 
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 capitalize">
-            {formatPokemonName(pokemon.name)}
+            {formatPokemonName(pokemon.name || "Unknown")}
           </h3>
 
           <div className="grid grid-cols-3 gap-2 text-sm">
             <div className="text-center">
               <p className="text-gray-500 dark:text-gray-400 text-xs">HP</p>
               <p className="font-bold text-gray-900 dark:text-white">
-                {pokemon.stats[0].base_stat}
+                {pokemon.stats?.[0]?.base_stat ?? "-"}
               </p>
             </div>
             <div className="text-center">
               <p className="text-gray-500 dark:text-gray-400 text-xs">ATK</p>
               <p className="font-bold text-gray-900 dark:text-white">
-                {pokemon.stats[1].base_stat}
+                {pokemon.stats?.[1]?.base_stat ?? "-"}
               </p>
             </div>
             <div className="text-center">
               <p className="text-gray-500 dark:text-gray-400 text-xs">DEF</p>
               <p className="font-bold text-gray-900 dark:text-white">
-                {pokemon.stats[2].base_stat}
+                {pokemon.stats?.[2]?.base_stat ?? "-"}
               </p>
             </div>
           </div>

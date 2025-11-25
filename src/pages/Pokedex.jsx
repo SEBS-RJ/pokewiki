@@ -6,6 +6,15 @@ import Loading from "../components/common/Loading";
 import { FiSearch, FiFilter } from "react-icons/fi";
 import { filterPokemonByType } from "../utils/pokemonHelpers";
 
+function useDebounce(value, delay) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debounced;
+}
+
 const Pokedex = () => {
   const {
     pokemonList,
@@ -14,36 +23,27 @@ const Pokedex = () => {
     isCaptured,
     hasMore,
     loadMore,
-    searchPokemonGlobal,
+    searchResults,
+    setSearchQuery
   } = usePokemonContext();
 
   const [selectedPokemon, setSelectedPokemon] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchedPokemon, setSearchedPokemon] = useState(null);
+  const [searchInput, setSearchInput] = useState("");
   const [selectedType, setSelectedType] = useState("");
+
+  const debouncedSearch = useDebounce(searchInput, 300);
 
   const types = [
     "normal","fire","water","electric","grass","ice","fighting","poison",
-    "ground","flying","psychic","bug","rock","ghost","dragon","dark","steel","fairy",
+    "ground","flying","psychic","bug","rock","ghost","dragon","dark","steel","fairy"
   ];
 
-  // DEBOUNCE: busca después de 500ms de inactividad
   useEffect(() => {
-    const handler = setTimeout(async () => {
-      if (!searchQuery) {
-        setSearchedPokemon(null);
-        return;
-      }
-      const result = await searchPokemonGlobal(searchQuery);
-      setSearchedPokemon(result);
-    }, 500);
+    setSearchQuery(debouncedSearch);
+  }, [debouncedSearch, setSearchQuery]);
 
-    return () => clearTimeout(handler);
-  }, [searchQuery, searchPokemonGlobal]);
-
-  // Combina búsqueda y filtro
-  const displayedPokemon = filterPokemonByType(
-    searchedPokemon ? [searchedPokemon] : pokemonList,
+  const filteredPokemon = filterPokemonByType(
+    debouncedSearch ? searchResults : pokemonList,
     selectedType
   );
 
@@ -54,17 +54,17 @@ const Pokedex = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header y filtros */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
         <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Pokédex</h1>
-
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="flex-1 relative">
             <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Buscar Pokémon por nombre o ID..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             />
           </div>
@@ -84,15 +84,18 @@ const Pokedex = () => {
           </div>
         </div>
 
-        <p className="text-gray-600 dark:text-gray-400">Mostrando {displayedPokemon.length} Pokémon</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          Mostrando {filteredPokemon.length} Pokémon
+        </p>
       </div>
 
+      {/* Lista de Pokémon */}
       {loading && pokemonList.length === 0 ? (
         <Loading message="Cargando la Pokédex..." size="large" />
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {displayedPokemon.map((pokemon) => (
+            {filteredPokemon.map((pokemon) => (
               <PokemonCard
                 key={pokemon.id}
                 pokemon={pokemon}
@@ -103,7 +106,7 @@ const Pokedex = () => {
             ))}
           </div>
 
-          {displayedPokemon.length === 0 && !loading && (
+          {filteredPokemon.length === 0 && !loading && (
             <div className="text-center py-12">
               <p className="text-xl text-gray-600 dark:text-gray-400">
                 No se encontraron Pokémon que coincidan con tus criterios
@@ -111,7 +114,7 @@ const Pokedex = () => {
             </div>
           )}
 
-          {!searchedPokemon && hasMore && !selectedType && (
+          {hasMore && !debouncedSearch && !selectedType && (
             <div className="flex justify-center py-8">
               <button
                 onClick={loadMore}
